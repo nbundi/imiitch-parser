@@ -1,0 +1,165 @@
+
+    formats:
+    - MessageType                  : [1,1]
+    - SecondsTimestamp             : [2,4]
+    - Timestamp                    : [2,4]
+    - Group                        : [1,8]
+    - EventCode                    : [1,1]
+    - Orderbook                    : [2,4]
+    - TickTableID                  : [2,4]
+    - QuantityTickSize             : [2,4]
+    - QuantityStart                : [3,4]
+    - PriceTickSize                : [2,4]
+    - PriceStart                   : [4,4]
+    - PriceType                    : [1,1]
+    - ISIN                         : [1,12]
+    - Currency                     : [1,3]
+    - MinimumQuantity              : [3,4]
+    - PriceDecimals                : [2,4]
+    - DelistingDate                : [2,4]
+    - DelistingTime                : [2,4]
+    - TradingState                 : [1,1]
+    - BookCondition                : [1,1]
+    - OrderNumber                  : [2,8]
+    - OrderVerb                    : [1,1]
+    - OrderQuantity                : [3,4]
+    - OrderPrice                   : [4,4]
+    - ExecutedQuantity             : [3,4]
+    - MatchNumber                  : [2,4]
+    - Printable                    : [1,1]
+    - ExecutionPrice               : [4,4]
+    - BookType                     : [1,1]
+    - Reason                       : [1,1]
+    - TheoreticalOpeningQuantity   : [2,8]
+    - BestBid                      : [4,4]
+    - BestOffer                    : [4,4]
+    - TheoreticalOpeningPrice      : [4,4]
+    - CrossType                    : [1,1]
+
+
+    messages:
+      T:
+        name: Timestamp Seeconds
+        fields:
+        - MessageType
+        - SecondsTimestamp
+      S:
+        name: System Event Message
+        fields:
+        - MessageType
+        - Timestamp
+        - Group
+        - EventCode
+        - Orderbook
+      M:
+        name: Quantity Tick Size Message
+        fields:
+        - MessageType
+        - Timestamp
+        - TickTableID
+        - QuantityTickSize
+        - QuantityStart     
+      L:
+        name: Price Tick Size Message
+        fields:
+        - MessageType
+        - Timestamp
+        - TickTableID
+        - PriceTickSize
+        - PriceStart
+      R:
+        name: Orderbook Directory Message
+        fields:
+        - MessageType
+        - Timestamp
+        - Orderbook
+        - PriceType
+        - ISIN
+        - Currency
+        - Group
+        - MinimumQuantity
+        - TickTableID
+        - TickTableID
+        - PriceDecimals
+        - DelistingDate
+        - DelistingTime
+      H:
+        name: Order Book Trading Action Message
+        fields:
+        - MessageType
+        - Timestamp
+        - Orderbook
+        - TradingState
+        - BookCondition
+      A:
+        name: Add Order Message
+        fields:
+        - MessageType
+        - Timestamp
+        - OrderNumber
+        - OrderVerb
+        - OrderQuantity
+        - Orderbook
+        - OrderPrice
+      E:
+        name: Order Executed Message
+        fields:
+        - MessageType
+        - Timestamp
+        - OrderNumber
+        - ExecutedQuantity
+        - MatchNumber
+      C:
+        name: Order Executed With Price Message
+        fields:
+        - MessageType
+        - Timestamp
+        - OrderNumber
+        - ExecutedQuantity
+        - MatchNumber
+        - Printable
+        - ExecutionPrice
+      P:
+        name: Trade Message
+        fields:
+        - MessageType
+        - Timestamp
+        - Orderbook
+        - ExecutedQuantity
+        - ExecutionPrice
+        - MatchNumber
+        - BookType
+      B:
+        name: Broken Trade Message
+        fields:
+        - MessageType
+        - Timestamp
+        - MatchNumber
+        - Reason
+      D:
+        name: Order Delete Message
+        fields:
+        - MessageType
+        - Timestamp
+        - OrderNumber
+      U:
+        name: Order Replace Message
+        fields:
+        - MessageType
+        - Timestamp
+        - OrderNumber
+        - OrderNumber
+        - OrderQuantity
+        - OrderPrice
+      I:
+        name: Indicative Price Quantity Message
+        fields:
+        - MessageType
+        - Timestamp
+        - TheoreticalOpeningQuantity
+        - Orderbook
+        - BestBid
+        - BestOffer
+        - TheoreticalOpeningPrice
+        - CrossType
+

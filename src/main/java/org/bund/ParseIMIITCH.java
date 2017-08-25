@@ -1,0 +1,92 @@
+package org.bund;
+
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import amay22.ParseDS;
+
+public class ParseIMIITCH {
+
+    private final ParseDS parDS;
+    // Constructor, takes a ParseDS object
+    ParseIMIITCH(ParseDS parDS) {
+        this.parDS = parDS;
+    }
+    // Given a byte array and length, will return the length
+    public String getString(byte[] payload) throws UnsupportedEncodingException {
+        return new String(payload);
+    }
+    // given a byte array will return the Length of payload
+    public Object getLen(byte[] payload) {
+        // Convert to big end
+        ByteBuffer length = ByteBuffer.wrap(payload);
+        return (int) length.getShort(0);
+    }
+    // given byte array of any size, will return an Integer field
+    public Long getInt(byte[] payload) {
+        long value = 0;
+        for (int i = 0; i < payload.length; i++) {
+            value = (value << 8) + (payload[i] & 0xff);
+        }
+        return value;
+    }
+    // given byte array of any size, will return a Quantity field
+    public Long getQuantity(byte[] payload) {
+        return getInt(payload);
+    }
+    // given byte array of any size, will return a Price field
+    // note: in the SIX IMI ITCH protocol number of digits are dynamically
+    //       defined in Orderbook Directory Messages [R], hence, other than
+    //       for NASDAQ's ITCH-5 protocol we cannot statically define digits
+    //       but return the raw int number
+    public Long getPrice(byte[] payload) {
+        return getInt(payload);
+    }
+    // Payload in, get the messageType, the fields, then the get the message
+    public ArrayList<String> messageIn(byte[] payload) throws UnsupportedEncodingException {
+        // Keep track of where we are at in the message
+        int messagePointer = 0;
+        ArrayList<String> messageArray = new ArrayList<>();
+        // Get the messageType (getChar only returns A char in the first byte)
+        String messageType = ""+new String(payload).charAt(0);
+        messageArray.add(messageType);
+        // increment after look at first char
+        messagePointer = messagePointer + 1;
+        // Get the fields for this message
+        ArrayList<Object> fieldsArray = this.parDS.getFields(messageType);
+        // loop over fields array, parsing messages --start at 1, we already have messageType
+        for (int i = 1; i < fieldsArray.size(); i++) {
+            // Get the field for this part of the message
+            ArrayList<Object> fieldArray = this.parDS.getFormat((String) fieldsArray.get(i));
+            // Call appropriate parser on the split payload
+            messageArray.add(parse(Arrays.copyOfRange(payload, messagePointer,
+                    messagePointer + ((Integer) fieldArray.get(1))),
+                    fieldArray));
+            // Move the array cursor after looking at this field
+            messagePointer = messagePointer + ((Integer) fieldArray.get(1));
+        }
+        return messageArray;
+    }
+    // With input byteArray, len & parse type, call approp parser
+    public String parse(byte[] arr, ArrayList<Object> fieldArray) throws UnsupportedEncodingException {
+        String value = "";
+        switch ((Integer) fieldArray.get(0)) {
+            case 1:
+                value = getString(arr);
+                break;
+            case 2:
+                value = ""+ getInt(arr);
+                break;
+            case 3:
+                value = ""+ getQuantity(arr);
+                break;
+            case 4:
+                value = ""+ getPrice(arr);
+                break;
+        }
+        return value.trim();
+    }
+}
+
