@@ -7,11 +7,11 @@ import java.util.Arrays;
 
 import amay22.ParseDS;
 
-public class ParseIMIITCH {
+public class MessageParser {
 
     private final ParseDS parDS;
     // Constructor, takes a ParseDS object
-    ParseIMIITCH(ParseDS parDS) {
+    MessageParser(ParseDS parDS) {
         this.parDS = parDS;
     }
     // Given a byte array and length, will return the length

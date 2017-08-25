@@ -13,11 +13,10 @@ import amay22.ParseDS;
 
 public class Parser {
 	private InputStream input;
-	private PrintWriter output;
-	ParseIMIITCH parsers;
+	MessageParser parsers;
 	ParseDS parseDS;
 
-	public Parser(String filename, String yamlFile, String outfile) {
+	public Parser(String filename, String yamlFile) {
 
 		// Via YAML, create the Data Structures
 		try {
@@ -26,7 +25,8 @@ public class Parser {
 			System.out.println("File not found...Check Filename");
 		}
 		// Create the parsers with the YAML data structures
-		parsers = new ParseIMIITCH(parseDS);
+		parsers = new MessageParser(parseDS);
+
 		// Open the input stream...
 		try {
 			if (filename.length() > 0) {
@@ -41,16 +41,10 @@ public class Parser {
 					") not found...Check Filename");
 		}
 
-		try {
-			output = new PrintWriter(new FileWriter(outfile));
-		} catch (IOException e) {
-			System.out.println("File (" + outfile +
-					") could not be created...Check Filename");
-		}
 	}
 
-	// Read the message from binary file
-	public ArrayList<String> parse() throws IOException, InterruptedException {
+	// read single message from binary file
+	public ArrayList<String> parseNext() throws IOException, InterruptedException {
 		if (input.read() == -1) { // EOF
 			return null;
 		}
@@ -73,86 +67,133 @@ public class Parser {
 		return messageArr;
 	}
 
-	// Read all message from binary file
-	public ArrayList<ArrayList<String>> parseAll() throws IOException, InterruptedException {
-		ArrayList<ArrayList<String>> msgAll = new ArrayList<ArrayList<String>>();
+	// read and print to console single message from binary file
+	public ArrayList<String> parseNPrintNext() throws IOException, InterruptedException {
 
-		// parse messages and add to collection
-		ArrayList<String> msg = parse();
-		while (msg!=null) {
-			msgAll.add(msg);
-			msg=parse();
-		}
-		return msgAll;
-	}
-
-	// Read and print to console the message from binary file
-	public ArrayList<String> parseNPrint() throws IOException, InterruptedException {
-
-		ArrayList<String> messageArr = parse();
+		ArrayList<String> messageArr = parseNext();
 		System.out.println(messageArr);
 
 		return messageArr;
 	}
 
-	// Read and write to file single message from binary file
-	public ArrayList<String> parseNWrite() throws IOException, InterruptedException {
-
-		// parse message
-		ArrayList<String> msg = parse();
-
-		// write message
-		if(msg!=null) {
-			output.println(String.join(",",msg));
-		}
-
-		return msg;
-	}
-
-	// Read all message from binary file
-	public void parseNWriteAll() throws IOException, InterruptedException {
+	// read all messages from binary file
+	public ArrayList<ArrayList<String>> parse() throws IOException, InterruptedException {
+		ArrayList<ArrayList<String>> msgAll = new ArrayList<ArrayList<String>>();
 
 		// parse messages and add to collection
-		ArrayList<String> msg = parse();
+		ArrayList<String> msg = parseNext();
 		while (msg!=null) {
-			output.println(String.join(",",msg));
-			msg=parse();
+			msgAll.add(msg);
+			msg=parseNext();
+		}
+		return msgAll;
+	}
+
+	// read all messages from binary file
+	public ArrayList<ArrayList<String>> parse(boolean typeCast) throws IOException, InterruptedException {
+
+		if(!typeCast) {
+			return this.parse();
+		} else {
+
+			// instantiate utilities
+			FieldCaster caster = new FieldCaster();
+			ArrayList<ArrayList<String>> msgAll = new ArrayList<ArrayList<String>>();
+
+			// parse and cast messages and add to collection
+			ArrayList<String> msg = caster.cast(parseNext());
+			while (msg != null) {
+				msgAll.add(msg);
+				msg = caster.cast(parseNext());
+			}
+			return msgAll;
+		}
+	}
+
+	// read all message from binary file
+	public void parse(String file, boolean cast) throws IOException, InterruptedException {
+
+		// open output stream
+		PrintWriter output=null;
+		try {
+			output = new PrintWriter(new FileWriter(file));
+		} catch (IOException e) {
+			System.out.println("File (" + file +
+					") could not be created...Check Filename");
+		}
+
+		if(!cast) { // parse and write messages
+			ArrayList<String> msg = parseNext();
+			while (msg!=null) {
+				output.println(String.join(",",msg));
+				msg=parseNext();
+			}
+		} else {
+			FieldCaster caster = new FieldCaster();
+			ArrayList<String> msg = caster.cast(parseNext());
+			while (msg!=null) { // parse, cast and write messages
+				msg=caster.cast(msg);
+				output.println(String.join(",",msg));
+				msg=parseNext();
+			}
 		}
 		output.close(); 
 	}
 
-	public void closeOutput() {
-		output.close();
+	// main method
+	// TODO: complete
+	/*
+	public static void main(String args[]) throws IOException, InterruptedException {
+		String yamlPath = readYamlPathArgs(args);
+		String infile = readItchPathArgs(args);
+		String outfile = readOutfilePathArgs(args);
+		boolean cast = readCastArgs(args);
+		Parser parse = new Parser(infile, yamlPath);
+		if(outfile==null) {
+			while (parse.parseNPrintNext() != null) {
+			}
+		} else {
+			//parse(outfile,cast);
+		}
 	}
 
-
+	// utilities
 	public static boolean hasCmdArgsYamlFlag (String args[]) {
 		return args.length >= 1 && args[0].equals("-y");
 	}
 
 	public static String readYamlPathArgs (String args[]) {
 		if (hasCmdArgsYamlFlag(args)) {
-			return args[1];
-		} else {
-			return "..//itch5.yaml";
-		}
-	}
-
-	public static String readItchPathArgs (String args[]) {
-		int argsPos = hasCmdArgsYamlFlag(args) ? 2 : 0;
-		if (args.length > argsPos) {
-			return args[argsPos];
+			return args[cmdArgsYamlFlagPos(args)];
 		} else {
 			return "";
 		}
 	}
 
-	public static void main(String args[]) throws IOException, InterruptedException {
-		String yamlPath = readYamlPathArgs(args);
-		String filename = readItchPathArgs(args);
-		Parser parse = new Parser(filename, yamlPath,
-				"./test.txt"); // true to print otherwise enter false
-		while (parse.parseNPrint() != null) {}
+	public static String readItchPathArgs (String args[]) {
+		if (hasCmdArgsInfileFlag(args)) {
+			return args[cmdArgsIntfileFlagPos(args)];
+		} else {
+			return null;
+		}
 	}
+
+	public static String readOutfilePathArgs (String args[]) {
+		if (hasCmdArgsOutfileFlag(args)) {
+			return args[cmdArgsOutfileFlagPos(args)];
+		} else {
+			return null;
+		}
+	}
+
+	public static boolean readCastArgs (String args[]) {
+		if (hasCmdArgsCastFlag(args)) {
+			return (boolean) args[cmdArgsCastFlagPos(args)];
+		} else {
+			return false;
+		}
+	}
+	*/
+
 }
 
