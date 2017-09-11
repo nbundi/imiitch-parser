@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import amay22.ParseDS;
 
@@ -110,7 +111,7 @@ public class Parser {
 		}
 	}
 
-	// read all message from binary file
+	// read and write all message from binary file
 	public void parse(String file, boolean cast) throws IOException, InterruptedException {
 
 		// open output stream
@@ -141,8 +142,6 @@ public class Parser {
 	}
 
 	// main method
-	// TODO: complete
-	/*
 	public static void main(String args[]) throws IOException, InterruptedException {
 		String yamlPath = readYamlPathArgs(args);
 		String infile = readItchPathArgs(args);
@@ -153,47 +152,47 @@ public class Parser {
 			while (parse.parseNPrintNext() != null) {
 			}
 		} else {
-			//parse(outfile,cast);
+			Parser parser = new Parser(infile,yamlPath);
+			parser.parse(outfile,cast);
 		}
 	}
 
 	// utilities
-	public static boolean hasCmdArgsYamlFlag (String args[]) {
-		return args.length >= 1 && args[0].equals("-y");
-	}
-
 	public static String readYamlPathArgs (String args[]) {
-		if (hasCmdArgsYamlFlag(args)) {
-			return args[cmdArgsYamlFlagPos(args)];
+		int pos = Arrays.asList(args).indexOf("-y");
+		if (pos==-1) {
+			return null;
 		} else {
-			return "";
+			return args[pos+1];
 		}
 	}
 
 	public static String readItchPathArgs (String args[]) {
-		if (hasCmdArgsInfileFlag(args)) {
-			return args[cmdArgsIntfileFlagPos(args)];
-		} else {
+		int pos = Arrays.asList(args).indexOf("-f");
+		if (pos==-1) {
 			return null;
+		} else {
+			return args[pos+1];
 		}
 	}
 
 	public static String readOutfilePathArgs (String args[]) {
-		if (hasCmdArgsOutfileFlag(args)) {
-			return args[cmdArgsOutfileFlagPos(args)];
-		} else {
+		int pos = Arrays.asList(args).indexOf("-o");
+		if (pos==-1) {
 			return null;
+		} else {
+			return args[pos+1];
 		}
 	}
 
 	public static boolean readCastArgs (String args[]) {
-		if (hasCmdArgsCastFlag(args)) {
-			return (boolean) args[cmdArgsCastFlagPos(args)];
-		} else {
+		int pos = Arrays.asList(args).indexOf("-c");
+		if (pos==-1) {
 			return false;
+		} else {
+			return Boolean.valueOf(args[pos+1]);
 		}
 	}
-	*/
 
 }
 
